@@ -1,21 +1,25 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "../../../../lib/db";
-import Product from "../../../../models/Product";
+import Order from "../../../../models/Order";
 
-// Get Single Product
+// =====================
+// Get Single Order
+// =====================
 export async function GET(request, { params }) {
   try {
     await connectDB();
 
     const { id } = await params;
 
-    const product = await Product.findById(id);
+    console.log("ORDER ID:", id);
 
-    if (!product) {
+    const order = await Order.findById(id);
+
+    if (!order) {
       return NextResponse.json(
         {
           success: false,
-          message: "Product not found",
+          message: "Order not found",
         },
         { status: 404 },
       );
@@ -23,7 +27,50 @@ export async function GET(request, { params }) {
 
     return NextResponse.json({
       success: true,
-      product,
+      order,
+    });
+  } catch (error) {
+    console.log("ERROR:", error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        message: error.message,
+      },
+      { status: 500 },
+    );
+  }
+}
+// =====================
+// Update Order
+// =====================
+export async function PUT(request, { params }) {
+  try {
+    await connectDB();
+
+    const { id } = await params;
+
+    const data = await request.json();
+
+    const order = await Order.findByIdAndUpdate(id, data, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!order) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Order not found",
+        },
+        { status: 404 },
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: "Order updated successfully",
+      order,
     });
   } catch (error) {
     return NextResponse.json(
@@ -36,37 +83,22 @@ export async function GET(request, { params }) {
   }
 }
 
-export async function PUT(request, { params }) {
+// =====================
+// Delete Order
+// =====================
+export async function DELETE(request, { params }) {
   try {
     await connectDB();
 
-    const role = request.headers.get("role");
-
-    if (role !== "admin") {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Admin access required",
-        },
-        {
-          status: 403,
-        },
-      );
-    }
-
     const { id } = await params;
-    const data = await request.json();
 
-    const product = await Product.findByIdAndUpdate(id, data, {
-      returnDocument: "after",
-      runValidators: true,
-    });
+    const order = await Order.findByIdAndDelete(id);
 
-    if (!product) {
+    if (!order) {
       return NextResponse.json(
         {
           success: false,
-          message: "Product not found",
+          message: "Order not found",
         },
         { status: 404 },
       );
@@ -74,8 +106,7 @@ export async function PUT(request, { params }) {
 
     return NextResponse.json({
       success: true,
-      message: "Product updated successfully",
-      product,
+      message: "Order deleted successfully",
     });
   } catch (error) {
     return NextResponse.json(
@@ -83,62 +114,7 @@ export async function PUT(request, { params }) {
         success: false,
         message: error.message,
       },
-      {
-        status: 500,
-      },
-    );
-  }
-}
-
-export async function DELETE(request, { params }) {
-  try {
-    await connectDB();
-
-    const role = request.headers.get("role");
-
-    if (role !== "admin") {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Admin access required",
-        },
-        {
-          status: 403,
-        },
-      );
-    }
-
-    const { id } = await params;
-
-    const product = await Product.findById(id);
-
-    if (!product) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Product not found",
-        },
-        {
-          status: 404,
-        },
-      );
-    }
-
-    await Product.findByIdAndDelete(id);
-
-    return NextResponse.json({
-      success: true,
-      message: "Product deleted successfully",
-    });
-  } catch (error) {
-    return NextResponse.json(
-      {
-        success: false,
-        message: error.message,
-      },
-      {
-        status: 500,
-      },
+      { status: 500 },
     );
   }
 }

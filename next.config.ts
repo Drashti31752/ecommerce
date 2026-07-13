@@ -1,7 +1,9 @@
-import type { NextConfig } from "next";
+import { NextResponse } from "next/server";
 
-const nextConfig: NextConfig = {
-  /* config options here */
-};
-
-export default nextConfig;
+export async function POST(request) {
+  return NextResponse.json({
+    contentType: request.headers.get("content-type"),
+ 
+ 
+  });
+}
